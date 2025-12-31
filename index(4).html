@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Survey</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 1.5s ease;
+        }
+
+        body.revealed {
+            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+        }
+
+        body.final-black {
+            background: #000;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 700px;
+        }
+
+        /* Start Screen */
+        .start-screen {
+            opacity: 1;
+            transition: opacity 0.6s ease;
+        }
+
+        .start-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .start-btn {
+            background: #fff;
+            border: none;
+            color: #000;
+            font-family: Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            padding: 1rem 4rem;
+            cursor: pointer;
+            border-radius: 2px;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            background: #e0e0e0;
+        }
+
+        /* Info Screen */
+        .info-screen {
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            pointer-events: none;
+        }
+
+        .info-screen.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .info-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .info-screen p {
+            font-family: Arial, sans-serif;
+            font-size: 1.1rem;
+            color: #fff;
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .question-intro {
+            margin-top: 2rem !important;
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .question-intro.visible {
+            opacity: 1;
+        }
+
+        .answers {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 2.5rem;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .answers.visible {
+            opacity: 1;
+        }
+
+        .answer-btn {
+            background: transparent;
+            border: 1px solid #fff;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            padding: 0.8rem 2.5rem;
+            cursor: pointer;
+            border-radius: 2px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+
+        .answer-btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        /* Result Screen */
+        .result-screen {
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
+            position: relative;
+            top: -50px;
+        }
+
+        .result-screen.visible {
+            opacity: 1;
+        }
+
+        .result-screen.hidden {
+            opacity: 0;
+        }
+
+        /* Reaction text (waitwhat / lying bitch) */
+        .reaction-text {
+            font-family: Arial, sans-serif;
+            font-size: 4rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        .reaction-text.appear {
+            animation: popIn 0.3s ease forwards;
+        }
+
+        .reaction-text.vanish-slow {
+            animation: vanishSlow 1s ease forwards;
+        }
+
+        .reaction-text.vanish-super-fast {
+            animation: vanishSuperFast 0.2s ease forwards;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes vanishSlow {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes vanishSuperFast {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+
+        .result-screen h2 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1.5rem;
+            letter-spacing: 2px;
+            opacity: 0;
+            transition: color 0.5s ease;
+        }
+
+        body.revealed .result-screen h2 {
+            color: #2c3e50;
+        }
+
+        .result-screen h2.fade-in-slow {
+            animation: fadeInSlow 2s ease forwards;
+        }
+
+        .result-screen p {
+            font-family: 'Dancing Script', cursive;
+            font-size: 1.8rem;
+            color: #fff;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            opacity: 0;
+            transition: color 0.5s ease;
+        }
+
+        body.revealed .result-screen p {
+            color: #34495e;
+        }
+
+        .result-screen p.fade-in-slow {
+            animation: fadeInSlow 2s ease forwards;
+        }
+
+        @keyframes fadeInSlow {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Final Black Screen */
+        .final-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1.5s ease;
+        }
+
+        .final-screen.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .final-screen h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 6rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 3px;
+            animation: fadeInSlow 2s ease forwards;
+        }
+
+        /* Floating flowers */
+        .flower {
+            position: absolute;
+            bottom: -150px;
+            animation: float-up 8s ease-out forwards;
+            opacity: 0;
+            z-index: 5;
+        }
+
+        @keyframes float-up {
+            0% {
+                opacity: 0;
+                transform: translateY(0) rotate(0deg) scale(0.8);
+            }
+            15% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-120vh) rotate(25deg) scale(1);
+            }
+        }
+
+        .flower svg {
+            filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.15));
+        }
+
+        @media (max-width: 768px) {
+            .info-screen p {
+                font-size: 1rem;
+            }
+
+            .reaction-text {
+                font-size: 2.5rem;
+            }
+
+            .result-screen h2 {
+                font-size: 3.5rem;
+            }
+
+            .result-screen p {
+                font-size: 1.4rem;
+            }
+
+            .final-screen h1 {
+                font-size: 4rem;
+            }
+
+            .answers {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .answer-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Start Screen - Just button -->
+        <div class="start-screen" id="startScreen">
+            <button class="start-btn" onclick="startSurvey()">START</button>
+        </div>
+
+        <!-- Survey Info Screen -->
+        <div class="info-screen" id="infoScreen">
+            <p id="surveyText"></p>
+            <p id="questionIntro" class="question-intro"></p>
+            <div class="answers" id="answerButtons">
+                <button class="answer-btn" onclick="answerQuestion('yes')">YES</button>
+                <button class="answer-btn" onclick="answerQuestion('no')">NO</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div class="result-screen" id="resultScreen">
+            <h1 id="reactionText" class="reaction-text"></h1>
+            <h2 id="mainTitle">Happy Birthday ZIZOU</h2>
+            <p id="resultMessage"></p>
+        </div>
+
+        <!-- Final Black Screen -->
+        <div class="final-screen" id="finalScreen">
+            <h1>wa baraka</h1>
+        </div>
+    </div>
+
+    <script>
+        const surveyParagraph = "This survey is part of an important research study conducted by Africa Business School. Your participation will help us understand behavioral patterns and decision-making processes across different demographics. The data collected is completely anonymous and will be used solely for academic purposes. This study has been approved by the ethics committee and follows all international research guidelines. Thank you for taking the time to contribute to this valuable research.";
+
+        const questionText = "But before deep diving into that, I should ask you a question. Is it true that tomorrow is your birthday?";
+
+        function startSurvey() {
+            document.getElementById('startScreen').classList.add('hidden');
+            
+            setTimeout(() => {
+                document.getElementById('infoScreen').classList.add('visible');
+                typeText();
+            }, 600);
+        }
+
+        function typeText() {
+            const textElement = document.getElementById('surveyText');
+            const words = surveyParagraph.split(' ');
+            let currentWord = 0;
+            
+            const interval = setInterval(() => {
+                if (currentWord < words.length) {
+                    textElement.textContent += (currentWord === 0 ? '' : ' ') + words[currentWord];
+                    currentWord++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        typeQuestion();
+                    }, 1500);
+                }
+            }, 150);
+        }
+
+        function typeQuestion() {
+            const questionElement = document.getElementById('questionIntro');
+            questionElement.classList.add('visible');
+            const words = questionText.split(' ');
+            let currentWord = 0;
+            
+            const interval = setInterval(() => {
+                if (currentWord < words.length) {
+                    questionElement.textContent += (currentWord === 0 ? '' : ' ') + words[currentWord];
+                    currentWord++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('answerButtons').classList.add('visible');
+                    }, 1000);
+                }
+            }, 150);
+        }
+
+        function answerQuestion(answer) {
+            document.getElementById('infoScreen').classList.add('hidden');
+            
+            setTimeout(() => {
+                const reactionText = document.getElementById('reactionText');
+                const mainTitle = document.getElementById('mainTitle');
+                const resultMessage = document.getElementById('resultMessage');
+                
+                document.getElementById('resultScreen').classList.add('visible');
+                
+                if (answer === 'yes') {
+                    // KEEP BLACK BACKGROUND - don't add 'revealed' yet
+                    // Show "waittwhaaaaaaaaaaaaaaaaaat" on BLACK screen
+                    reactionText.textContent = 'waittwhaaaaaaaaaaaaaaaaaat';
+                    reactionText.classList.add('appear');
+                    
+                    // Vanish after 2 seconds
+                    setTimeout(() => {
+                        reactionText.classList.remove('appear');
+                        reactionText.classList.add('vanish-slow');
+                        
+                        // NOW change to colored background
+                        setTimeout(() => {
+                            document.body.classList.add('revealed');
+                            
+                            // Show Happy Birthday slowly
+                            setTimeout(() => {
+                                mainTitle.classList.add('fade-in-slow');
+                                
+                                // Show message after Happy Birthday
+                                setTimeout(() => {
+                                    resultMessage.textContent = 'wishing you all what you dreams of';
+                                    resultMessage.classList.add('fade-in-slow');
+                                }, 1500);
+                                
+                                // Start flowers
+                                startFlowerExplosion();
+                                
+                                // Show final screen after 40 seconds
+                                setTimeout(() => {
+                                    showFinalScreen();
+                                }, 40000);
+                            }, 500);
+                        }, 1000);
+                    }, 2000);
+                    
+                } else {
+                    // KEEP BLACK BACKGROUND for NO answer too
+                    // Show "lying bitch" - SUPER FAST on BLACK screen
+                    reactionText.textContent = 'lying bitch';
+                    reactionText.classList.add('appear');
+                    
+                    // Vanish SUPER FAST after 0.5 second
+                    setTimeout(() => {
+                        reactionText.classList.remove('appear');
+                        reactionText.classList.add('vanish-super-fast');
+                        
+                        // NOW change to colored background
+                        setTimeout(() => {
+                            document.body.classList.add('revealed');
+                            
+                            // Show Happy Birthday slowly after vanish
+                            setTimeout(() => {
+                                mainTitle.classList.add('fade-in-slow');
+                                
+                                // Show message after Happy Birthday
+                                setTimeout(() => {
+                                    resultMessage.textContent = 'wishing you all what you dreams of';
+                                    resultMessage.classList.add('fade-in-slow');
+                                }, 1500);
+                                
+                                // Start flowers
+                                startFlowerExplosion();
+                                
+                                // Show final screen after 40 seconds
+                                setTimeout(() => {
+                                    showFinalScreen();
+                                }, 40000);
+                            }, 500);
+                        }, 200);
+                    }, 500);
+                }
+            }, 1000);
+        }
+
+        function showFinalScreen() {
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.body.classList.add('final-black');
+            document.body.classList.remove('revealed');
+            document.getElementById('finalScreen').classList.add('visible');
+        }
+
+        function createFlower(type = 'tulip') {
+            const flower = document.createElement('div');
+            flower.className = 'flower';
+            
+            const randomX = Math.random() * window.innerWidth;
+            flower.style.left = randomX + 'px';
+            
+            const randomDelay = Math.random() * 2;
+            flower.style.animationDelay = randomDelay + 's';
+            
+            const randomDuration = 6 + Math.random() * 4;
+            flower.style.animationDuration = randomDuration + 's';
+            
+            if (type === 'tulip') {
+                const tulipColors = [
+                    { petal1: '#f4c2d4', petal2: '#f5a6c3', petal3: '#f7d4e0' },
+                    { petal1: '#fde4ec', petal2: '#f9cfe0', petal3: '#fbd9e6' },
+                    { petal1: '#e8b5c7', petal2: '#f9e4ec', petal3: '#f4d1dd' },
+                    { petal1: '#f5c6d8', petal2: '#f8d5e3', petal3: '#fbe9f0' },
+                    { petal1: '#ffb3d9', petal2: '#ffc9e6', petal3: '#ffe0f0' }
+                ];
+                const colorSet = tulipColors[Math.floor(Math.random() * tulipColors.length)];
+                const size = 40 + Math.random() * 30;
+                
+                flower.innerHTML = `
+                    <svg width="${size}" height="${size * 1.4}" viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 130 Q50 100 50 70" stroke="#7a9b76" stroke-width="3" fill="none"/>
+                        <ellipse cx="40" cy="45" rx="15" ry="25" fill="${colorSet.petal1}" transform="rotate(-20 40 45)"/>
+                        <ellipse cx="50" cy="35" rx="15" ry="28" fill="${colorSet.petal2}"/>
+                        <ellipse cx="60" cy="45" rx="15" ry="25" fill="${colorSet.petal3}" transform="rotate(20 60 45)"/>
+                        <path d="M35 75 Q30 80 25 90" stroke="#7a9b76" stroke-width="2" fill="none"/>
+                        <ellipse cx="23" cy="92" rx="8" ry="12" fill="${colorSet.petal3}" transform="rotate(-30 23 92)"/>
+                    </svg>
+                `;
+            } else if (type === 'rose') {
+                const size = 35 + Math.random() * 25;
+                flower.innerHTML = `
+                    <svg width="${size}" height="${size * 1.4}" viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 130 Q48 100 50 75" stroke="#6b8b6b" stroke-width="2.5" fill="none"/>
+                        <circle cx="50" cy="50" r="18" fill="#ff9eb5" opacity="0.6"/>
+                        <circle cx="50" cy="50" r="13" fill="#ff7a9d" opacity="0.7"/>
+                        <circle cx="50" cy="50" r="8" fill="#ff5c8a" opacity="0.8"/>
+                        <circle cx="50" cy="50" r="4" fill="#ff3d77"/>
+                        <path d="M35 80 Q30 85 28 92" stroke="#6b8b6b" stroke-width="2" fill="none"/>
+                        <ellipse cx="26" cy="95" rx="7" ry="11" fill="#8db88d" transform="rotate(-25 26 95)"/>
+                    </svg>
+                `;
+            } else if (type === 'daisy') {
+                const size = 30 + Math.random() * 20;
+                flower.innerHTML = `
+                    <svg width="${size}" height="${size * 1.5}" viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 135 Q50 105 50 80" stroke="#7a9b76" stroke-width="2" fill="none"/>
+                        <circle cx="50" cy="55" r="6" fill="#ffd700"/>
+                        <ellipse cx="50" cy="45" rx="6" ry="10" fill="#fff" opacity="0.9"/>
+                        <ellipse cx="58" cy="50" rx="6" ry="10" fill="#fff" opacity="0.9" transform="rotate(45 58 50)"/>
+                        <ellipse cx="58" cy="60" rx="6" ry="10" fill="#fff" opacity="0.9" transform="rotate(90 58 60)"/>
+                        <ellipse cx="50" cy="65" rx="6" ry="10" fill="#fff" opacity="0.9" transform="rotate(135 50 65)"/>
+                        <ellipse cx="42" cy="60" rx="6" ry="10" fill="#fff" opacity="0.9" transform="rotate(180 42 60)"/>
+                        <ellipse cx="42" cy="50" rx="6" ry="10" fill="#fff" opacity="0.9" transform="rotate(225 42 50)"/>
+                    </svg>
+                `;
+            } else {
+                const size = 35 + Math.random() * 25;
+                flower.innerHTML = `
+                    <svg width="${size}" height="${size * 1.4}" viewBox="0 0 100 150" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 130 Q50 100 50 75" stroke="#85a885" stroke-width="2.5" fill="none"/>
+                        <circle cx="50" cy="55" r="5" fill="#ffe680"/>
+                        <ellipse cx="50" cy="45" rx="8" ry="12" fill="#e8b5f5" opacity="0.8"/>
+                        <ellipse cx="60" cy="50" rx="8" ry="12" fill="#d8a5e8" opacity="0.8" transform="rotate(60 60 50)"/>
+                        <ellipse cx="60" cy="60" rx="8" ry="12" fill="#c995db" opacity="0.8" transform="rotate(120 60 60)"/>
+                        <ellipse cx="50" cy="65" rx="8" ry="12" fill="#e8b5f5" opacity="0.8" transform="rotate(180 50 65)"/>
+                        <ellipse cx="40" cy="60" rx="8" ry="12" fill="#d8a5e8" opacity="0.8" transform="rotate(240 40 60)"/>
+                        <ellipse cx="40" cy="50" rx="8" ry="12" fill="#c995db" opacity="0.8" transform="rotate(300 40 50)"/>
+                    </svg>
+                `;
+            }
+            
+            document.body.appendChild(flower);
+            
+            setTimeout(() => {
+                flower.remove();
+            }, randomDuration * 1000);
+        }
+
+        function startFlowerExplosion() {
+            const flowerTypes = ['tulip', 'tulip', 'tulip', 'tulip', 'tulip', 'rose', 'daisy', 'wildflower'];
+            
+            // Initial burst
+            for (let i = 0; i < 70; i++) {
+                setTimeout(() => {
+                    const type = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+                    createFlower(type);
+                }, i * 80);
+            }
+            
+            // CONTINUOUS flowers - NEVER stops!
+            setInterval(() => {
+                const type = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+                createFlower(type);
+            }, 250);
+        }
+    </script>
+</body>
+</html>
